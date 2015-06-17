@@ -9,7 +9,7 @@ I may or may not get back to it, but the following config file works fine on the
 ````
 input {
 	file {
-		path => "/Users/tim/Downloads/logstash/*.txt"
+		path => "/path.to.informatica.text.file/*.txt"
 		type => "informatica_text"
 		start_position => "beginning"
 		codec => multiline {
