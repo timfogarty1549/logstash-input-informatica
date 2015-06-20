@@ -9,7 +9,7 @@ I may or may not get back to it, but the following config file works fine on the
 ````
 input {
 	file {
-		path => "/path.to.informatica.text.file/*.txt"
+		path => "/path-to-informatica-exported-log_file/*.txt"
 		type => "informatica_text"
 		start_position => "beginning"
 		codec => multiline {
@@ -23,11 +23,15 @@ input {
 filter {
 	if [type] == 'informatica_text' {
 		grok {
-			match => { "message" =>  "%{TIMESTAMP_ISO8601:timestamp} : %{WORD:severity} : \(%{NUMBER:pip} \| %{WORD:thread}\) : \(%{WORD:serviceType} \| %{WORD:serviceName}\) : %{WORD:clientNode} : %{WORD:messageCode} : %{GREEDYDATA:text}"}
+			match => { "message" =>  "%{TIMESTAMP_ISO8601:ts} : %{DATA:severity} : \(%{INT:pip} \| %{DATA:thread}\) : \(%{DATA:serviceType} \| %{DATA:serviceName}\) : %{DATA:clientNode} : %{DATA:messageCode} : %{GREEDYDATA:msg}"}
+		}
+		date {
+			match => [ "ts", "YYYY-MM-dd HH:mm:ss" ]
+			target => "@timestamp"
+			remove_field => [ "ts" ]
 		}
 		mutate {
-           	remove_field => ["message"]
-           	remove_field => ["tags"]
+           	remove_field => ["message", "tags" ]
 		}
 	}
 }
@@ -37,8 +41,6 @@ output {
 		codec => rubydebug
 	}
 	elasticsearch {
-		type => "informatica_text"
-	    protocol => "http"
 	    host => "localhost"
 	}
 }
